@@ -1,4 +1,8 @@
 import numpy as np
+import wget
+
+
+
 
 url='''https://worldview.earthdata.nasa.gov/?v=150.92489600284233,-30.835367201702034,154.38592951943735,-29.0886268487955
 &l=VIIRS_SNPP_Thermal_Anomalies_375m_Day,VIIRS_SNPP_Thermal_Anomalies_375m_Night(hidden),Reference_Labels_15m(hidden),
@@ -42,13 +46,8 @@ else:
 url=f'''https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2019-09-07T00:00:00Z&BBOX={lat_big},{lon_small},{lat_small},{lon_big}
 &CRS=EPSG:4326&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor,Coastlines_15m&WRAP=day,x&FORMAT=image/jpeg&WIDTH=612&HEIGHT=332&ts=1663590759376'''
 
-print(url)
+img=wget.download(url)
 
-'''
-Latitude
- °
-Longitude
- °
-'''
+
 
 
