@@ -1,7 +1,7 @@
 import numpy as np
 import wget
-
-
+import pandas as pd
+import time
 
 
 url='''https://worldview.earthdata.nasa.gov/?v=150.92489600284233,-30.835367201702034,154.38592951943735,-29.0886268487955
@@ -24,29 +24,58 @@ lat2=float(url[3])
 dif_lat=np.abs(lat1-lat2)/2
 dif_lon=np.abs(lon1-lon2)/2
 
-lat=-30.17596
-lon=152.27618
+data=pd.read_csv('./australian_fire_archive.csv')
 
-if lat<0:
-    lat_small= lat + dif_lat
-    lat_big= lat - dif_lat
-else:
-    lat_small= lat - dif_lat
-    lat_big= lat + dif_lat
+data_lon=data['longitude']
+data_lat=data['latitude']
+data_time=data['acq_date']
 
-if lon<0:
-    lon_small= lon + dif_lon
-    lon_big= lon - dif_lon
-else:
-    lon_small= lon - dif_lon
-    lon_big= lon + dif_lon
+my_dict={
+    'lat_small':[],
+    'lat_big':[],
+    'lon_small':[],
+    'lon_big':[],
+    'time':[],
+    }
+
+for lat,lon,time in zip(data_lat,data_lon,data_time):
+
+    if lat<0:
+        lat_small= lat + dif_lat
+        lat_big= lat - dif_lat
+    else:
+        lat_small= lat - dif_lat
+        lat_big= lat + dif_lat
+
+    if lon<0:
+        lon_small= lon + dif_lon
+        lon_big= lon - dif_lon
+    else:
+        lon_small= lon - dif_lon
+        lon_big= lon + dif_lon
+    
+    my_dict['lat_small'].append(lat_small)
+    my_dict['lat_big'].append(lat_big)
+    my_dict['lon_small'].append(lon_small)
+    my_dict['lon_big'].append(lon_big)
+    my_dict['time'].append(time)
 
 
+count=0
+for x in range(0,len(my_dict['time'])):
+    
+    url=f'''https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&
+    TIME={my_dict["time"][x]}T00:00:00Z&BBOX={my_dict["lat_big"][x]},{my_dict["lon_small"][x]},{my_dict["lat_small"][x]},{my_dict["lon_big"][x]}
+    &CRS=EPSG:4326&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor,Coastlines_15m&WRAP=day,x&FORMAT=image/jpeg&WIDTH=612&HEIGHT=332&ts=1663590759376'''
+    time.sleep(3)
+    try:
+        img=wget.download(url)
+    except:
+        print('Görüntü yok')
 
-url=f'''https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2019-09-07T00:00:00Z&BBOX={lat_big},{lon_small},{lat_small},{lon_big}
-&CRS=EPSG:4326&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor,Coastlines_15m&WRAP=day,x&FORMAT=image/jpeg&WIDTH=612&HEIGHT=332&ts=1663590759376'''
-
-img=wget.download(url)
+    count +=1
+    if count>20:
+        break
 
 
 
