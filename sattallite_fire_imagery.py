@@ -20,19 +20,13 @@ lat2=float(url[3])
 dif_lat=np.abs(lat1-lat2)/2
 dif_lon=np.abs(lon1-lon2)/2
 
-data=pd.read_csv('./australian_fire_archive.csv')
+data=pd.read_csv('./modis_2020_Australia.csv')
 
 data_lon=data['longitude']
 data_lat=data['latitude']
 data_time=data['acq_date']
 
-my_dict={
-    'lat_small':[],
-    'lat_big':[],
-    'lon_small':[],
-    'lon_big':[],
-    'time':[],
-    }
+
 
 old_lat=0
 old_lon=0
@@ -40,60 +34,67 @@ old_time=0
 count=0
 
 for lat,lon,time in zip(data_lat,data_lon,data_time):
-    
-    count +=1
-    print(count)
-    if count>10:
-        break
 
-    if old_time==time and lat-10<old_lat<lat+10 and lon-10<old_lon<lon+10:
-        old_time=time
-        old_lat=lat
-        old_lon=lon
-        print('GEÇTİM')
+    check=int(time.split('-')[1])
+    if check<5:
         pass
-
     else:
-        if lat<0:
-            lat_small= lat + dif_lat
-            lat_big= lat - dif_lat
+    
+        my_dict={
+        'lat_small':[],
+        'lat_big':[],
+        'lon_small':[],
+        'lon_big':[],
+        'time':[],
+        }
+
+        count +=1
+        print(count)
+        if count>1000:
+            break
+
+        if old_time==time and lat-10<old_lat<lat+10 and lon-10<old_lon<lon+10:
+            old_time=time
+            old_lat=lat
+            old_lon=lon
+            print('pass')
+            pass
+
         else:
             lat_small= lat - dif_lat
             lat_big= lat + dif_lat
-
-        if lon<0:
-            lon_small= lon + dif_lon
-            lon_big= lon - dif_lon
-        else:
+        
             lon_small= lon - dif_lon
             lon_big= lon + dif_lon
-        
-        
-        my_dict['lat_small'].append(lat_small)
-        my_dict['lat_big'].append(lat_big)
-        my_dict['lon_small'].append(lon_small)
-        my_dict['lon_big'].append(lon_big)
-        my_dict['time'].append(time)
-
-        old_time=time
-        old_lat=lat
-        old_lon=lon
-
-        import time
-        for x in range(0,len(my_dict['time'])):
             
-            url=f'''https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME={my_dict["time"][x]}T00:00:00Z&BBOX={my_dict["lat_big"][x]},{my_dict["lon_small"][x]},{my_dict["lat_small"][x]},{my_dict["lon_big"][x]}&CRS=EPSG:4326&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor,Coastlines_15m&WRAP=day,x&FORMAT=image/jpeg&WIDTH=612&HEIGHT=332&ts=1663590759376'''
-            # url_2=f'https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME={my_dict["time"][x]}T00:00:00Z&BBOX={my_dict["lat_small"][x]},{my_dict["lon_big"][x]},{my_dict["lat_big"][x]},{my_dict["lon_small"][x]}&CRS=EPSG:4326&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor,Coastlines_15m,VIIRS_SNPP_Thermal_Anomalies_375m_Day&WRAP=day,x,none&FORMAT=image/jpeg&WIDTH=394&HEIGHT=394&ts=1663771937988'
-            # https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2019-09-07T00:00:00Z&BBOX=-17.5422,144.5351,-15.8096,146.2678&CRS=EPSG:4326&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor,Coastlines_15m,VIIRS_SNPP_Thermal_Anomalies_375m_Day&WRAP=day,x,none&FORMAT=image/jpeg&WIDTH=394&HEIGHT=394&ts=1663771937988
-            
-            time.sleep(2)
+            my_dict['lat_small'].append(lat_small)
+            my_dict['lat_big'].append(lat_big)
+            my_dict['lon_small'].append(lon_small)
+            my_dict['lon_big'].append(lon_big)
+            my_dict['time'].append(time)
 
-            try:
-                img=wget.download(url)
-            except:
-                print('Görüntü yok')
+            print(my_dict)
 
-            
+            old_time=time
+            old_lat=lat
+            old_lon=lon
+
+            import time
+            for x in range(0,len(my_dict['time'])):
+                
+                url=f'''https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME={my_dict["time"][x]}T00:00:00Z&BBOX={my_dict["lat_small"][x]},{my_dict["lon_small"][x]},{my_dict["lat_big"][x]},{my_dict["lon_big"][x]}&CRS=EPSG:4326&LAYERS=VIIRS_NOAA20_CorrectedReflectance_TrueColor&WRAP=day&FORMAT=image/jpeg&WIDTH=1657&HEIGHT=841&ts=1666299705698'''
+                # url_2=f'https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME={my_dict["time"][x]}T00:00:00Z&BBOX={my_dict["lat_small"][x]},{my_dict["lon_big"][x]},{my_dict["lat_big"][x]},{my_dict["lon_small"][x]}&CRS=EPSG:4326&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor,Coastlines_15m,VIIRS_SNPP_Thermal_Anomalies_375m_Day&WRAP=day,x,none&FORMAT=image/jpeg&WIDTH=394&HEIGHT=394&ts=1663771937988'
+                # https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2019-09-07T00:00:00Z&BBOX=-17.5422,144.5351,-15.8096,146.2678&CRS=EPSG:4326&LAYERS=VIIRS_SNPP_CorrectedReflectance_TrueColor,Coastlines_15m,VIIRS_SNPP_Thermal_Anomalies_375m_Day&WRAP=day,x,none&FORMAT=image/jpeg&WIDTH=394&HEIGHT=394&ts=1663771937988
+                
+                time.sleep(2)
+                
+                print(url)
+                try:
+                    img=wget.download(url)
+                except:
+                    print('no image found')
+                my_dict.clear()
+                
 
 
 
